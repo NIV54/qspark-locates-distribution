@@ -12,9 +12,8 @@ LOCATE_VARIANCE = 0.4
 # feel free to change this field if you want
 SYMBOL_VARIANCE = 0.2
 
+
 # simulate external api call
-
-
 def request_locates(requested_locates: AggregatedLocatesRequest) -> AggregatedLocatesRequest:
     return {
         key: random.randint(math.floor(value * (1 - LOCATE_VARIANCE)),

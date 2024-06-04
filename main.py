@@ -11,7 +11,7 @@ from models import AggregatedLocatesRequest, LocateDistribution
 
 
 def append_missing_symbols(locates_request: AggregatedLocatesRequest, locates_received: AggregatedLocatesRequest) -> AggregatedLocatesRequest:
-    for key, value in locates_request.items():
+    for key in locates_request.keys():
         if key not in locates_received:
             locates_received[key] = 0
     return locates_received
@@ -47,7 +47,9 @@ def main():
     locates_received = append_missing_symbols(
         locates_request, locates_received)
     print("Locates received: ", json.dumps(locates_received, indent=2))
+
     locate_distributions: List[LocateDistribution] = []
+
     for key, value in locates_received.items():
         # all fulfilled
         if locates_request[key] <= value:
