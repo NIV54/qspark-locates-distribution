@@ -7,10 +7,10 @@ from typing import List
 from constants import FULL_LOCATE_SIZE
 from dummy_data import case1
 from external_api import request_locates
-from models import AggregatedLocatesRequest, LocateDistribution, LocateRequest
+from models import AggregatedLocatesRequest, LocateDistribution
 
 
-def round_to_full_locate(locates: int | float):
+def round_down_to_full_locate(locates: int | float):
     return int(math.floor(locates / FULL_LOCATE_SIZE)) * FULL_LOCATE_SIZE
 
 
@@ -50,6 +50,7 @@ def main():
             continue
 
         # partial fulfillment
+        # starting with "fair" split
         current_distributions: List[LocateDistribution] = []
         for current_request in requests_by_symbol[key]:
             current_distributions.append({
@@ -62,8 +63,9 @@ def main():
             current_distributions
         ))
 
+        # giving out a full locate to whoever possible, and rounding down the rest
         for current_distribution in sort_by_highest_partial_locate_first(current_distributions):
-            current_distribution['number_of_locates_given'] = round_to_full_locate(
+            current_distribution['number_of_locates_given'] = round_down_to_full_locate(
                 current_distribution['number_of_locates_given'])
             if partial_locates_sum >= FULL_LOCATE_SIZE:
                 current_distribution['number_of_locates_given'] = FULL_LOCATE_SIZE
