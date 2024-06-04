@@ -1,13 +1,14 @@
 import json
 import math
+import sys
 from itertools import groupby
 from operator import itemgetter
 from typing import List
 
 from constants import FULL_LOCATE_SIZE
-from dummy_data import case1
+from dummy_data import cases
 from external_api import request_locates
-from models import AggregatedLocatesRequest, LocateDistribution
+from models import AggregatedLocatesRequest, LocateDistribution, LocateRequest
 
 
 def append_missing_symbols(locates_request: AggregatedLocatesRequest, locates_received: AggregatedLocatesRequest) -> AggregatedLocatesRequest:
@@ -29,10 +30,10 @@ def sort_by_highest_partial_locate_first(locate_distributions: List[LocateDistri
     )
 
 
-def main():
+def distribute_locates(locate_requests: List[LocateRequest]):
     requests_by_symbol = {
         key: [item for item in group]
-        for key, group in groupby(case1, itemgetter('symbol'))
+        for key, group in groupby(locate_requests, itemgetter('symbol'))
     }
 
     locates_request: AggregatedLocatesRequest = {
@@ -88,6 +89,16 @@ def main():
         locate_distributions.extend(current_distributions)
 
     print("Locates given: ", json.dumps(locate_distributions, indent=2))
+
+
+def main():
+    RUN_SPECIFIC_CASE = int(sys.argv[1]) if len(sys.argv) > 1 else -1
+
+    if RUN_SPECIFIC_CASE != -1 and RUN_SPECIFIC_CASE < len(cases):
+        distribute_locates(cases[RUN_SPECIFIC_CASE])
+    else:
+        for case in cases:
+            distribute_locates(case)
 
 
 if __name__ == "__main__":
