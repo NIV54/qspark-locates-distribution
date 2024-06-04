@@ -80,7 +80,7 @@ def distribute_locates(locate_requests: List[LocateRequest]):
             current_distribution['number_of_locates_given'] = round_down_to_full_locate(
                 current_distribution['number_of_locates_given'])
             if partial_locates_sum >= FULL_LOCATE_SIZE:
-                current_distribution['number_of_locates_given'] = FULL_LOCATE_SIZE
+                current_distribution['number_of_locates_given'] += FULL_LOCATE_SIZE
                 partial_locates_sum -= FULL_LOCATE_SIZE
             else:
                 current_distribution['number_of_locates_given'] += partial_locates_sum
