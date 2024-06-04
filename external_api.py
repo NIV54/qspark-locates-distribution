@@ -1,16 +1,8 @@
 import math
 import random
 
+from constants import LOCATE_VARIANCE, SYMBOL_VARIANCE
 from models import AggregatedLocatesRequest
-
-# meaning this mock will return 40% less or more of the requested locates
-# feel free to change this field if you want
-LOCATE_VARIANCE = 0.4
-
-# meaning on 20% of the time this mock will not return a symbol at all,
-# mimicking it being out of stock
-# feel free to change this field if you want
-SYMBOL_VARIANCE = 0.2
 
 
 # simulate external api call
