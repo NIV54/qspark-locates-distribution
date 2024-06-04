@@ -10,6 +10,13 @@ from external_api import request_locates
 from models import AggregatedLocatesRequest, LocateDistribution
 
 
+def append_missing_symbols(locates_request: AggregatedLocatesRequest, locates_received: AggregatedLocatesRequest) -> AggregatedLocatesRequest:
+    for key, value in locates_request.items():
+        if key not in locates_received:
+            locates_received[key] = 0
+    return locates_received
+
+
 def round_down_to_full_locate(locates: int | float):
     return int(math.floor(locates / FULL_LOCATE_SIZE)) * FULL_LOCATE_SIZE
 
@@ -37,7 +44,9 @@ def main():
     }
 
     locates_received = request_locates(locates_request)
-
+    locates_received = append_missing_symbols(
+        locates_request, locates_received)
+    print("Locates received: ", json.dumps(locates_received, indent=2))
     locate_distributions: List[LocateDistribution] = []
     for key, value in locates_received.items():
         # all fulfilled
@@ -76,7 +85,7 @@ def main():
 
         locate_distributions.extend(current_distributions)
 
-    print(json.dumps(locate_distributions, indent=2))
+    print("Locates given: ", json.dumps(locate_distributions, indent=2))
 
 
 if __name__ == "__main__":
