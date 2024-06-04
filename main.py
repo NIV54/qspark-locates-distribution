@@ -1,14 +1,25 @@
 import json
+import math
 from itertools import groupby
 from operator import itemgetter
 from typing import List
 
+from constants import FULL_LOCATE_SIZE
 from dummy_data import case1
+from external_api import request_locates
 from models import AggregatedLocatesRequest, LocateDistribution, LocateRequest
 
 
-def request_locates(requested_locates: AggregatedLocatesRequest) -> AggregatedLocatesRequest:
-    return {key: 500 for key, value in requested_locates.items()}
+def round_to_full_locate(locates: int | float):
+    return int(math.floor(locates / FULL_LOCATE_SIZE)) * FULL_LOCATE_SIZE
+
+
+def sort_by_highest_partial_locate_first(locate_distributions: List[LocateDistribution]) -> List[LocateDistribution]:
+    return sorted(
+        locate_distributions,
+        key=lambda x: x['number_of_locates_given'] % FULL_LOCATE_SIZE,
+        reverse=True
+    )
 
 
 def main():
@@ -31,19 +42,37 @@ def main():
     for key, value in locates_received.items():
         # all fulfilled
         if locates_request[key] <= value:
-            for single_request in requests_by_symbol[key]:
+            for current_request in requests_by_symbol[key]:
                 locate_distributions.append({
-                    **single_request,
-                    'number_of_locates_given': single_request['number_of_locates_requested']
+                    **current_request,
+                    'number_of_locates_given': current_request['number_of_locates_requested']
                 })
             continue
 
         # partial fulfillment
-        for single_request in requests_by_symbol[key]:
-            locate_distributions.append({
-                **single_request,
-                'number_of_locates_given': (single_request['number_of_locates_requested'] / locates_request[key]) * value
+        current_distributions: List[LocateDistribution] = []
+        for current_request in requests_by_symbol[key]:
+            current_distributions.append({
+                **current_request,
+                'number_of_locates_given': (current_request['number_of_locates_requested'] / locates_request[key]) * value
             })
+
+        partial_locates_sum = sum(map(
+            lambda x: x['number_of_locates_given'] % FULL_LOCATE_SIZE,
+            current_distributions
+        ))
+
+        for current_distribution in sort_by_highest_partial_locate_first(current_distributions):
+            current_distribution['number_of_locates_given'] = round_to_full_locate(
+                current_distribution['number_of_locates_given'])
+            if partial_locates_sum >= FULL_LOCATE_SIZE:
+                current_distribution['number_of_locates_given'] = FULL_LOCATE_SIZE
+                partial_locates_sum -= FULL_LOCATE_SIZE
+            else:
+                current_distribution['number_of_locates_given'] += partial_locates_sum
+                partial_locates_sum = 0
+
+        locate_distributions.extend(current_distributions)
 
     print(json.dumps(locate_distributions, indent=2))
 

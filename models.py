@@ -10,4 +10,4 @@ class LocateRequest(TypedDict):
 
 
 class LocateDistribution(LocateRequest):
-    number_of_locates_given: int
+    number_of_locates_given: float
